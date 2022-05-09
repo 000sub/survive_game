@@ -30,8 +30,8 @@ public class Item {
 
 		this.x = 0;
 		this.y = 0;
-		this.w = 1300;
-		this.h = 730;
+		this.w = Constant.game_width;
+		this.h = Constant.game_height;
 
 		this.isHave  = false;
 		this.isUsed	 = false;
@@ -49,17 +49,20 @@ public class Item {
 			e.printStackTrace();
 		}
 
-		this.x = (int)(x / 25 * 1300);
-		this.y = (int)(y / 15 * 730);
-		this.w = (int)(w / 25 * 1300);
-		this.h = (int)(h / 15 * 730);
+		//convert scale
+		this.x = (int)(x / Constant.ppt_width  * Constant.game_width);
+		this.y = (int)(y / Constant.ppt_height * Constant.game_height);
+		this.w = (int)(w / Constant.ppt_width  * Constant.game_width);
+		this.h = (int)(h / Constant.ppt_height * Constant.game_height);
 		
 		this.isHave  = false;
 		this.isUsed	 = false;
 		this.isItem  = true;
 		this.isBtn   = isBtn;
 		
-		System.out.println(caption + " ==> " + this.x + "(x), " + this.y + "(y), " + this.w + "(w), " + this.h + "(h)");
+		if (Constant.isDebug) {
+			System.out.println(caption + " ==> " + this.x + "(x), " + this.y + "(y), " + this.w + "(w), " + this.h + "(h)");
+		}
 	}
 
 	public String getCaption() {

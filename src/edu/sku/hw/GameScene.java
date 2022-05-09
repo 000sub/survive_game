@@ -5,6 +5,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.Map;
 
+import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
@@ -13,6 +14,8 @@ class GameScene extends JFrame {
 	Map<Integer, Item> map;
 	MyPanel mypanel;																						//내부 클래스 변수 선언
 	GameRun game;
+	JComponent timer;
+	boolean canExit;
 
 	private class MyPanel extends JPanel {  																//JPanel을 상속받은 내부 클래스 선언
 		@Override
@@ -26,9 +29,11 @@ class GameScene extends JFrame {
 		}
 	}
 
-	public GameScene(GameRun game, Map<Integer, Item> map) {
-		this.game = game;
-		this.map  = map;
+	public GameScene(GameRun game, Map<Integer, Item> map, JComponent timer, boolean canExit) {
+		this.game    = game;
+		this.map     = map;
+		this.timer   = timer;
+		this.canExit = canExit;
 		
 		initData();
 		setInitLayout();
@@ -36,16 +41,27 @@ class GameScene extends JFrame {
 	}
 
 	private void initData() {
-		setTitle("Survival Game");  																		//프레임 제목
-		setSize(1300, 730);  																				//프레임 크기
-		setLocationRelativeTo(null);																		//센터
-		//setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);  													//프레임 창 닫기 
-		mypanel = new MyPanel(); 																			//내부 클래스 객체 생성, 객체를 생성하지 않으면 이미지 표시 안됨
+		setTitle("Survival Game");  	
+        setAlwaysOnTop(true);
+		setSize(Constant.game_width, Constant.game_height);  					//프레임 크기
+		setLocationRelativeTo(null);											//센터
+		
+		if (canExit) {
+			setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);  					//창 닫기 -> 종료
+		}
+		
+		//panel
+		mypanel = new MyPanel(); 												//객체를 생성하지 않으면 이미지 표시 안됨
+		
+        //timer
+		if (game.isTimerShow()) {
+			mypanel.add(timer);
+		}
 	}
 
 	private void setInitLayout() {
-		setVisible(true);  																					//true값을 넣어야 프레임이 화면에 표시됨
-		this.add(mypanel);  																				//내부 클래스를 프레임에 추가
+		setVisible(true);  														//프레임이 화면에 표시됨
+		this.add(mypanel);  													//내부 클래스를 프레임에 추가
 	}
 
 	private void addEventListener() {
@@ -59,7 +75,11 @@ class GameScene extends JFrame {
 			    	Item item = entry.getValue();
 			    	
 			    	if (item.isItem() && posX > item.getX() && posX < item.getX() + item.getW() && posY > item.getY() && posY < item.getY() + item.getH()) {
-			    		System.out.println(item.getCaption() + " ==> " + posX + "(x), " + posY + "(x) have been clicked.");
+			    		
+			    		if (Constant.isDebug) {
+			    			System.out.println(item.getCaption() + " ==> " + posX + "(x), " + posY + "(x) have been clicked.");
+			    		}
+			    		
 			    		game.callbackClick(item);
 			    	}
 			    }
