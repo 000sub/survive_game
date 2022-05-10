@@ -5,27 +5,37 @@ import java.util.Map;
 
 public class GameRun implements Callback {
 	Map<Integer, Item> itemGet = new HashMap<>();
+    AudioPlayer player = new AudioPlayer();
+    
 	private GameRun   game;
 	private GameScene scene;
     private GameTimer timer;
 	private int sceneNum = 0;
 	private int itemGetCount = 0;
-	
-	
-	public boolean isTimerTick() {
-		return sceneNum <= 6 ? false: true;
-	}
 
 	
 	public boolean isTimerShow() {
-		boolean isShow = sceneNum < 6 ? true : false;
+		boolean isShow = sceneNum <= 5 ? true : false;
 		
 		if (!isShow) {
 			timer.gameTimerStop();
 		}
 		return isShow;
 	}
-
+	
+	
+	public void audioStop() {
+		if (sceneNum == 5 || sceneNum == 6 || sceneNum == 16) {
+			player.stop();
+		}
+	}
+	
+	
+	@Override
+	public void callbackClose() {
+		player.stop();
+	}
+	
 	
 	@Override
 	public void callbackTimeOver() {
@@ -39,12 +49,13 @@ public class GameRun implements Callback {
 		}
 	}
     
-	
 	@Override
 	public void callbackClick(Item item) {
 		if (Constant.isDebug) {
 			System.out.println(item.getCaption() + " ==> Invoked. " + sceneNum + "(secne), " + item.isBtn() + "(isButton)");
 		}
+		
+		audioStop();
 		
         switch(item.getCaption()) {		
 			case "생존시작":
@@ -56,11 +67,13 @@ public class GameRun implements Callback {
 							//시작
 							if (sceneNum < 1 && item.getCaption().equals("생존시작")) {
 								timer.gameTimerStart();
+								 player.play(1);
 							}
 
 							//상태
 							if (sceneNum > 5 && item.getCaption().equals("생존시작")) {
 								new GameScene(game, makeStstus(), timer, false);
+								 player.play(2);
 								
 							} else {
 								sceneNum++;
@@ -241,6 +254,7 @@ public class GameRun implements Callback {
 		this.timer = new GameTimer(game);
 		this.sceneNum = 0;
 		scene = new GameScene(game, makeScene(), timer, true);
+        player.play(0);
 	}
 	
 	
