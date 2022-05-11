@@ -5,37 +5,27 @@ import java.util.Map;
 
 public class GameRun implements Callback {
 	Map<Integer, Item> itemGet = new HashMap<>();
-    AudioPlayer player = new AudioPlayer();
-    
 	private GameRun   game;
 	private GameScene scene;
     private GameTimer timer;
 	private int sceneNum = 0;
 	private int itemGetCount = 0;
+	
+	
+	public boolean isTimerTick() {
+		return sceneNum <= 6 ? false: true;
+	}
 
 	
 	public boolean isTimerShow() {
-		boolean isShow = sceneNum <= 5 ? true : false;
+		boolean isShow = sceneNum < 6 ? true : false;
 		
 		if (!isShow) {
 			timer.gameTimerStop();
 		}
 		return isShow;
 	}
-	
-	
-	public void audioStop() {
-		if (sceneNum == 5 || sceneNum == 6 || sceneNum == 16) {
-			player.stop();
-		}
-	}
-	
-	
-	@Override
-	public void callbackClose() {
-		player.stop();
-	}
-	
+
 	
 	@Override
 	public void callbackTimeOver() {
@@ -49,38 +39,48 @@ public class GameRun implements Callback {
 		}
 	}
     
+	
 	@Override
 	public void callbackClick(Item item) {
 		if (Constant.isDebug) {
 			System.out.println(item.getCaption() + " ==> Invoked. " + sceneNum + "(secne), " + item.isBtn() + "(isButton)");
 		}
 		
-		audioStop();
-		
         switch(item.getCaption()) {		
-			case "생존시작":
-			case "다음구역":
-			case "탈출":	scene.setVisible(false);
-							scene.dispose();
-							scene = null;
-							
-							//시작
-							if (sceneNum < 1 && item.getCaption().equals("생존시작")) {
-								timer.gameTimerStart();
-								 player.play(1);
-							}
-
-							//상태
-							if (sceneNum > 5 && item.getCaption().equals("생존시작")) {
-								new GameScene(game, makeStstus(), timer, false);
-								 player.play(2);
-								
-							} else {
-								sceneNum++;
-								scene = new GameScene(game, makeScene(), timer, true);
-							}
+			case "생존시작": timer.gameTimerStart();
+						scene.setVisible(false);
+						   sceneNum = -1;
+						   scene = new GameScene(game, makeScene(), timer, true);
+						   break;
+			case "return_icon":
+					scene.setVisible(false);
+					sceneNum = -1;
+					scene = new GameScene(game, makeScene(), timer, true);
+					break;
+			case "탈출":	sceneNum = 8;
+							scene.setVisible(false);
+							scene = new GameScene(game, makeScene(), timer, true);
 							break;
-							
+			case "select_1": sceneNum = 1;
+			scene.setVisible(false);
+			 scene = new GameScene(game, makeScene(), timer, true);
+			 break;
+			case "select_2": sceneNum = 2;
+			scene.setVisible(false);
+			scene = new GameScene(game, makeScene(), timer, true);
+			break;
+			case "select_3": sceneNum = 3;
+			scene.setVisible(false);
+			scene = new GameScene(game, makeScene(), timer, true);
+			break;
+			case "select_4": sceneNum = 4;
+			scene.setVisible(false);
+			scene = new GameScene(game, makeScene(), timer, true);
+			break;
+			case "select_5": sceneNum = 5;
+			scene.setVisible(false);
+			scene = new GameScene(game, makeScene(), timer, true);
+			break;
 			case "구조완료":scene.setVisible(false);
 							scene.dispose();
 
@@ -119,6 +119,7 @@ public class GameRun implements Callback {
 								for (Map.Entry<Integer, Item> entry : itemGet.entrySet()) {
 							    	Item x = entry.getValue();
 							    	System.out.println("아이템 획득: " + x.getCaption() + ", " + x.isHave() + "(isHave), " + x.isUsed() + "(isUsed)");
+							    	
 								}
 							}
 							break;
@@ -130,12 +131,22 @@ public class GameRun implements Callback {
 		Map<Integer, Item> map = new HashMap<>();
 		
         switch(sceneNum) {
+        
+        	case -1: map.put(0, new Item("scene_mapselect"));
+        			 map.put(1, new Item("select_1", 5, 5, 4.11, 1.75, true));
+        			 map.put(2, new Item("select_2", 5, 9, 4.11, 1.75, true));
+        			 map.put(3, new Item("select_3", 5, 7, 4.11, 1.75, true));
+        			 map.put(4, new Item("select_4", 10, 5, 4.11, 1.75, true));
+        			 map.put(5, new Item("select_5", 10, 9, 4.11, 1.75, true));
+        			 map.put(6, new Item("탈출", 20.38, 11.74, 4.11, 1.75, true));
+        			 break;
+        			 
 			case 0: map.put(0, new Item("scene00"));
 					map.put(1, new Item("생존시작", 20.38, 11.74, 4.11, 1.75, true));
 					break;
 			    
 			case 1: map.put(0, new Item("scene01"));
-					map.put(1, new Item("다음구역", 20.38, 11.74, 4.11, 1.75, true));
+					map.put(1, new Item("return_icon", 20.38, 11.74, 4.11, 1.75, true));
 					
 					map.put(2, new Item("손난로", 		3.97, 10.32, 0.65, 1.01, false));
 					map.put(3, new Item("구급상자", 	9.72,  7.54, 0.79, 1.02, false));
@@ -144,7 +155,7 @@ public class GameRun implements Callback {
 					break;
 				    
 			case 2: map.put(0, new Item("scene02"));
-					map.put(1, new Item("다음구역", 20.38, 	11.74, 	4.11, 	1.75, true));
+					map.put(1, new Item("return_icon", 20.38, 	11.74, 	4.11, 	1.75, true));
 					
 					map.put(2, new Item("우비", 	0.79,	10.72,	1.59,	1.29, false));
 					map.put(3, new Item("펌프", 	8.93,	5.16,	1.39,	1.2,  false));
@@ -153,7 +164,7 @@ public class GameRun implements Callback {
 					break;
 				    
 			case 3:	map.put(0, new Item("scene0" + sceneNum));
-					map.put(1, new Item("다음구역", 20.38, 11.74, 4.11, 1.75, true));
+					map.put(1, new Item("return_icon", 20.38, 11.74, 4.11, 1.75, true));
 					
 					map.put(2, new Item("물",		4.76,	6.5,	1.19,	0.99, false));
 					map.put(3, new Item("식칼",		9.45,	6.65,	0.71,	0.79, false));
@@ -162,7 +173,7 @@ public class GameRun implements Callback {
 					break;
 				    
 			case 4: map.put(0, new Item("scene0" + sceneNum));
-					map.put(1, new Item("다음구역", 20.38, 11.74, 4.11, 1.75, true));
+					map.put(1, new Item("return_icon", 20.38, 11.74, 4.11, 1.75, true));
 					
 					map.put(2, new Item("작살총",	2.29,	10.96,	1.97,	1.89, false));
 					map.put(3, new Item("낚시대",	8.92,	5.98,	2.62,	2.21, false));
@@ -171,8 +182,7 @@ public class GameRun implements Callback {
 					break;
 				    
 			case 5: map.put(0, new Item("scene0" + sceneNum));
-					map.put(1, new Item("다음구역", 20.38, 11.74, 4.11, 1.75, true));
-					
+					map.put(1, new Item("return_icon", 20.38, 11.74, 4.11, 1.75, true));
 					map.put(2, new Item("나침반",		0.2,	8.33,	0.58,	0.6,  false));
 					map.put(3, new Item("구명튜브",		1.98,	9.13,	1.92,	2.07, false));
 					map.put(4, new Item("레이더반사기",	6.75,	12.5,	1.24,	1.19, false));
@@ -254,7 +264,6 @@ public class GameRun implements Callback {
 		this.timer = new GameTimer(game);
 		this.sceneNum = 0;
 		scene = new GameScene(game, makeScene(), timer, true);
-        player.play(0);
 	}
 	
 	
