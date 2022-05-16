@@ -1,17 +1,27 @@
 package edu.sku.hw;
 
 import java.util.HashMap;
+import java.util.Random;
+import java.util.stream.IntStream;
+
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+
 import java.util.Map;
 
 public class GameRun implements Callback {
 	Map<Integer, Item> itemGet = new HashMap<>();
     AudioPlayer player = new AudioPlayer();
     
+    private Random rand = new Random();
 	private GameRun   game;
 	private GameScene scene;
     private GameTimer timer;
 	private int sceneNum = 0;
 	private int itemGetCount = 0;
+	private int[] randomScenes = rand.ints(5,8,15).toArray(); //scene 랜덤 지정
+	private int sceneCounter = 0;
+	private Status status = new Status();
 
 	
 	public boolean isTimerShow() {
@@ -44,7 +54,7 @@ public class GameRun implements Callback {
 		}
 		
 		if (sceneNum <= 5) {
-			sceneNum = 6-1;					
+			JOptionPane.showMessageDialog(scene, "Time Over!");
 			callbackClick(new Item("다음구역", 0, 0, 0, 0, true));	//타임오버
 		}
 	}
@@ -61,19 +71,28 @@ public class GameRun implements Callback {
 						   sceneNum = -1;
 						   scene = new GameScene(game, makeScene(), timer, true);
 						   break;
+			case "표류시작": scene.setVisible(false);
+			   			   sceneNum = 98;
+			   			   scene = new GameScene(game, makeScene(), timer, true);
+			   			   break;
+			
 			case "return_icon":
 					scene.setVisible(false);
-					sceneNum = -1;
-					scene = new GameScene(game, makeScene(), timer, true);
-					break;
+				   sceneNum = -1;
+				   scene = new GameScene(game, makeScene(), timer, true);
+				   break;
 			case "탈출":	sceneNum = 7;
 							scene.setVisible(false);
 							scene = new GameScene(game, makeScene(), timer, true);
 							break;
-			case "backpack": sceneNum = -2;
+			case "backpack": 
+							 sceneNum = -2;
 							 scene.setVisible(false);
 							  scene = new Inventory(game, makeScene(), timer, true);
 							  break;
+			case "상태": 
+						JOptionPane.showMessageDialog(scene, status.day+" 일 차 생존\n건강: "+status.getHealth()+"\n포만감: "+status.getHunger()+"\n수분: "+status.getThirst());
+			 			break;
 			case "select_1": sceneNum = 2;
 			scene.setVisible(false);
 			 scene = new GameScene(game, makeScene(), timer, true);
@@ -94,6 +113,10 @@ public class GameRun implements Callback {
 			scene.setVisible(false);
 			scene = new GameScene(game, makeScene(), timer, true);
 			break;
+			case "다음날": sceneNum = randomScenes[sceneCounter++];
+						scene.setVisible(false);
+						scene = new GameScene(game, makeScene(), timer, true);
+						break;
 			case "구조완료":scene.setVisible(false);
 							scene.dispose();
 
@@ -124,6 +147,7 @@ public class GameRun implements Callback {
 								}
 								
 								item.setHave(true);
+								JOptionPane.showMessageDialog(scene, item.getCaption()+" 획득");
 								itemGet.put(itemGetCount, item);				//아이템 저장
 								itemGetCount++;
 								
@@ -148,7 +172,15 @@ public class GameRun implements Callback {
                  map.put(1, new Item("return_icon", 23, 13, 1, 1, true));
                  int i = 2;
                  for (Map.Entry<Integer, Item> entry: itemGet.entrySet()) {
-                	 map.put(i, new Item(entry.getValue().getCaption(), -1.4+2.4*i, 3, 1, 1, true));
+                	 if (i<=9) {
+                		 map.put(i, new Item(entry.getValue().getCaption(), -1.4+2.4*i, 3, 1, 1, true));
+                	 }
+                	 else if (i>9 && i<=17) {
+                		 map.put(i, new Item(entry.getValue().getCaption(), -1.4+2.4*(i-8), 4.5, 1, 1, true));
+                	 }
+                	 else if (i>17 && i<=25) {
+                		 map.put(i, new Item(entry.getValue().getCaption(), -1.4+2.4*(i-16), 6, 1, 1, true));
+                	 }
                 	 i++;
                  }
         		 break;
@@ -215,7 +247,7 @@ case 5: map.put(0, new Item("scene0" + sceneNum));
 					break;
 				    
 			case 7: map.put(0, new Item("scene0" + sceneNum));
-					map.put(1, new Item("생존시작", 20.38, 11.74, 4.11, 1.75, true));
+					map.put(1, new Item("표류시작", 20.38, 11.74, 4.11, 1.75, true));
 					break;
 				    
 			//상어
@@ -224,13 +256,13 @@ case 5: map.put(0, new Item("scene0" + sceneNum));
 					map.put(2, new Item("상태", 0.9,  11.74, 1.8,  1.75, true));
 					break;
 				    
-			//태풍
+			//토네이도
 			case 9: map.put(0, new Item("scene0" + sceneNum));
 					//map.put(1, new Item("태풍", 18.3, 11.74, 6.19, 1.75, true));
 					map.put(2, new Item("상태", 0.9,  11.74, 1.8,  1.75, true));
 					break;
 				    
-			//해적
+			//난파선
 			case 10:map.put(0, new Item("scene" + sceneNum));
 					//map.put(1, new Item("해적", 18.3, 11.74, 6.19, 1.75, true));
 					map.put(2, new Item("상태", 0.9,  11.74, 1.8,  1.75, true));
@@ -253,26 +285,50 @@ case 5: map.put(0, new Item("scene0" + sceneNum));
 					//map.put(1, new Item("거북이", 18.3, 11.74, 6.19, 1.75, true));
 					map.put(2, new Item("상태", 0.9,  11.74, 1.8,  1.75, true));
 					break;
+					
+			//번개
+			case 17:map.put(0, new Item("scene" + sceneNum));
+					map.put(1, new Item("backpack", 1, 11, 2, 2, true));
 				    
-			//구조신호
-			case 14:map.put(0, new Item("scene" + sceneNum));
+					
+			//잠망경
+			case 50:map.put(0, new Item("scene" + sceneNum));
+					//map.put(1, new Item("구조신호", 16.1, 11.74, 8.39, 1.75, true));
+					map.put(2, new Item("상태", 0.9,  11.74, 1.8,  1.75, true));
+					break;
+			//구조선박
+			case 51:map.put(0, new Item("scene" + sceneNum));
 					//map.put(1, new Item("구조신호", 16.1, 11.74, 8.39, 1.75, true));
 					map.put(2, new Item("상태", 0.9,  11.74, 1.8,  1.75, true));
 					break;
 				    
 			//구조헬기
-			case 15:map.put(0, new Item("scene" + sceneNum));
+			case 52:map.put(0, new Item("scene" + sceneNum));
 					map.put(1, new Item("구조헬기", 16.1, 11.74, 8.39, 1.75, true));
 					map.put(2, new Item("상태", 0.9,  11.74, 1.8,  1.75, true));
 					break;
 				    
+			
+					
+			
+					
 			//구조완료
-			case 16:map.put(0, new Item("scene" + sceneNum));
+			case 97:map.put(0, new Item("scene" + sceneNum));
 					map.put(1, new Item("구조완료", 16.1, 11.74, 8.39, 1.75, true));
 					break;
 				    
+			//멀미 (1일차 고정)		
+			case 98:map.put(0, new Item("scene" + sceneNum));
+					map.put(1, new Item("backpack", 1, 11, 2, 2, true));
+					map.put(2, new Item("상태", 3,  11, 1.8,  1.75, true));
+				    break;
+				    
 			//GameOver
 			case 99:map.put(0, new Item("scene" + sceneNum));
+					map.put(1, new Item("게임오버", 7.9, 5.94, 8.39, 1.75, true));
+					break;
+					
+			case 100:map.put(0, new Item("status"));
 					map.put(1, new Item("게임오버", 7.9, 5.94, 8.39, 1.75, true));
 					break;
         }
@@ -290,7 +346,7 @@ case 5: map.put(0, new Item("scene0" + sceneNum));
 	
 	
 	//여기부터 작성하세요.
-	public Map<Integer, Item> makeStstus() {
+	public Map<Integer, Item> makeStatus() {
 		Map<Integer, Item> map = new HashMap<>();
 		
 		map.put(0, new Item("status"));
