@@ -29,16 +29,16 @@ public class Status {
 	}
 	
 	public String getHunger() {
-		if (health ==3) {
+		if (hunger ==3) {
 			return "포만";
 		}
-		else if (health == 2) {
+		else if (hunger == 2) {
 			return "보통";
 		}
-		else if (health == 1) {
+		else if (hunger == 1) {
 			return "굶주림";
 		}
-		else if (health == 0) {
+		else if (hunger == 0) {
 			return "기아";
 		}
 		
@@ -46,16 +46,16 @@ public class Status {
 	}
 	
 	public String getThirst() {
-		if (health ==3) {
+		if (thirst ==3) {
 			return "촉촉함";
 		}
-		else if (health == 2) {
+		else if (thirst == 2) {
 			return "보통";
 		}
-		else if (health == 1) {
+		else if (thirst == 1) {
 			return "목마름";
 		}
-		else if (health == 0) {
+		else if (thirst == 0) {
 			return "탈수";
 		}
 		
