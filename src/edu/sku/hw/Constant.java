@@ -7,5 +7,5 @@ public class Constant {
 	public static int ppt_height	= 15;
 	public static int timer_max 	= 60;
 	
-	public static boolean isDebug	= true;	
+	public static boolean isDebug	= false;	
 }

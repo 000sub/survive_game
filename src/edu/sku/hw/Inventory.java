@@ -1,18 +1,13 @@
 package edu.sku.hw;
 
-import java.awt.Color;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.util.Map;
 
 import javax.swing.JComponent;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 
-import edu.sku.hw.GameScene.MyPanel;
-
+@SuppressWarnings("serial")
 public class Inventory extends GameScene {
 
 	private Map<Integer, Item> items;
