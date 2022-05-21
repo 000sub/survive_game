@@ -6,6 +6,7 @@ public class Status {
 	public int hunger = 3;   //3: 포만 2: 보통 1: 굶주림 0: 기아
 	public int thirst = 3;   //3: 촉촉함 2: 보통 1: 목마름 0: 탈수
 	public int day = 1;
+	public int score = 0;
 	
 
 	public String getHealth() {
@@ -60,5 +61,26 @@ public class Status {
 		}
 		
 		return null;
+	}
+	
+	public int getScore() { //올만점 14000 + 날짜수
+		score = health*2000 + hunger*1000 + thirst*1000 + day*500;
+		return score;
+	}
+	
+	
+	public String getRank() {
+		if (score > 12000) {
+			return "A";
+		}
+		else if (score > 8000) {
+			return "B";
+		}
+		else if (score > 4000) {
+			return "C";
+		}
+		else {
+			return "D";
+		}
 	}
 }

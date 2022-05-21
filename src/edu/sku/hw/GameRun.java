@@ -1,6 +1,10 @@
 package edu.sku.hw;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
@@ -17,7 +21,7 @@ public class GameRun implements Callback {
 	private GameTimer timer;
 	private int sceneNum = 0;
 	private int itemGetCount = 0;
-	private int[] randomScenes = rand.ints(10, 8, 19).toArray(); // scene 랜덤 지정 (씬 개수, 8부터, n-1까지 )
+	private ArrayList<Integer> randomScenes = new ArrayList();
 	private int sceneCounter = 0;
 	private Status status = new Status();
 	private int prevScene = 0;
@@ -29,6 +33,8 @@ public class GameRun implements Callback {
 	private String selectedItem = null;
 	private double randNum;
 	private int deathCount = 0;
+	private int hitShortCount = 0;
+	private int hitLongCount = 0;
 
 	public boolean isTimerShow() {
 		boolean isShow = sceneNum <= 5 ? true : false;
@@ -103,6 +109,31 @@ public class GameRun implements Callback {
 			scene.setVisible(false);
 			sceneNum = -3;
 			scene = new GameScene(game, makeScene(), timer, true);
+			break;
+			
+		case "showscore":
+			JOptionPane.showMessageDialog(scene, status.day + " 일 차 생존\n건강: " + status.getHealth() + "\n포만감: "
+					+ status.getHunger() + "\n수분: " + status.getThirst()+"\n총점: "+status.getScore()+"\n랭크: "+status.getRank());
+			break;
+			
+		case "hitshort": 
+			hitShortCount++;
+			if (hitShortCount ==6 && hitLongCount ==3) { //특수승리
+				scene.setVisible(false);
+				sceneNum = 97;
+				scene = new GameScene(game, makeScene(), timer, true);
+			}
+			break;
+			
+		case "hitlong":
+			hitLongCount++;
+			
+			if (hitShortCount !=3 || hitLongCount > 3) {
+				hitShortCount = 0;
+				hitLongCount = 0;
+				break;
+			}
+			
 			break;
 		// scene 별로 결과 나뉨
 		case "show_result":
@@ -327,7 +358,7 @@ public class GameRun implements Callback {
 						sceneNum = 142;
 					} else { // 탈수 30%
 						sceneNum = 141;
-						status.thirst = 0;
+						status.thirst = 1;
 					}
 				}
 				scene = new GameScene(game, makeScene(), timer, true);
@@ -401,6 +432,220 @@ public class GameRun implements Callback {
 
 					// 아이템 랜덤 사라짐
 					itemGet.remove(2);
+				}
+				scene = new GameScene(game, makeScene(), timer, true);
+				break;
+			}
+			
+			else if (prevScene == 19) { // 보물상자 발견
+				if (randNum <=0.5) { // 식량, 물 50%
+					sceneNum = 193;
+					foodCount++;
+					waterCount++;
+				}
+				
+				else if (randNum <=0.75) { //신호탄 25%
+					sceneNum = 192;
+					itemGet.put(102, new Item("신호탄", 1,1,1,1, false));
+				}
+
+				else { // 아무것도 없음 25%
+					sceneNum = 191;
+				}
+				scene = new GameScene(game, makeScene(), timer, true);
+				break;
+			}
+			
+			else if (prevScene == 20) { // 드럼통 발견
+				if (randNum <=0.4) { // 식량, 물 40%
+					sceneNum = 203;
+					foodCount++;
+					waterCount++;
+				}
+				
+				else if (randNum <=0.5) { //손전등 10%
+					sceneNum = 202;
+					itemGet.put(102, new Item("손전등", 1,1,1,1, false));
+				}
+
+				else { // 시체 발견 50%
+					sceneNum = 201;
+					status.health--;
+				}
+				scene = new GameScene(game, makeScene(), timer, true);
+				break;
+			}
+			
+			else if (prevScene == 21) { // 빗속에서 지붕 수리
+				if (selectedItem == "옷" || selectedItem == "우비" || selectedItem == "손난로") { // 옷 관련 아이템, 손난로 소지
+					if (randNum <= 0.9) { //무사히 수리 90%
+						sceneNum = 212;
+						if (status.health<4) {
+							status.health++;
+						}
+					}
+					else { //감기 10%
+						sceneNum = 211;
+						status.health--;
+					}
+				}
+
+				else { // 그 외
+					if (randNum <= 0.3) { // 무사히 수리 30%
+						sceneNum = 212;
+						if (status.health<4) {
+							status.health++;
+						}
+					} 
+					else { // 감기 70%
+						sceneNum = 211;
+						status.health--;
+					}
+				}
+				scene = new GameScene(game, makeScene(), timer, true);
+				break;
+			}
+			
+			else if (prevScene == 22) { // 해초지역
+				if (selectedItem == "식칼" || selectedItem == "서바이벌책") { //식칼, 서바이벌책
+					sceneNum = 222;
+					foodCount+=2;
+				}
+
+				else { // 그 외
+					sceneNum = 221;
+					foodCount++;
+				}
+				scene = new GameScene(game, makeScene(), timer, true);
+				break;
+			}
+			
+			else if (prevScene == 23) { // 식량 상태이상
+				if (selectedItem == "서바이벌책") { //서바이벌책
+					sceneNum = 232;
+				}
+
+				else { // 그 외
+					sceneNum = 231;
+					foodCount-=2;
+					if (foodCount < 0) foodCount = 0;
+				}
+				scene = new GameScene(game, makeScene(), timer, true);
+				break;
+			}
+			
+			else if (prevScene == 24) { // 고래
+				if (selectedItem == "식칼" || selectedItem == "작살총") { // 무기 소지
+					sceneNum = 241; //중상 100%
+					status.health = 0;
+				}
+
+				else { // 그 외
+					sceneNum = 242;
+				}
+				
+				scene = new GameScene(game, makeScene(), timer, true);
+				break;
+			}
+			
+			else if (prevScene == 25) { // 이상한 물고기
+				if (selectedItem == "서바이벌책") { // 서바이벌책 소지
+					sceneNum = 253; //중상 100%
+					foodCount++;
+				}
+
+				else { // 그 외
+					if (randNum <= 0.5) {
+						sceneNum = 252;
+						if (status.hunger < 3) status.hunger++;
+					}
+					else {
+						sceneNum = 251;
+						status.health--;
+						status.thirst--;
+					}
+				}
+				
+				scene = new GameScene(game, makeScene(), timer, true);
+				break;
+			}
+			
+			else if (prevScene == 26) { //모래폭풍
+				if (selectedItem == "모터") { // 이동 관련 아이템 소지
+					if (randNum <= 0.9) { // 도망 50%
+						sceneNum = 262;
+					} else { // 중상 40%
+						sceneNum = 261;
+						status.health = 0;
+					}
+				}
+
+				else { // 그 외
+					if (randNum <= 0.5) { // 도망 50%
+						sceneNum = 262;
+					} else { // 중상 50%
+						sceneNum = 261;
+						status.health = 0;
+					}
+				}
+				
+				scene = new GameScene(game, makeScene(), timer, true);
+				break;
+			}
+			
+			else if (prevScene == 27) { //물고기 떼
+				if (selectedItem == "식칼" || selectedItem == "작살총" || selectedItem == "구명조끼" || selectedItem == "구명튜브") { // 사냥
+																															// 관련
+																															// 아이템
+																															// 소지
+					if (randNum <= 0.5) { // 사냥 대성공 50%
+						sceneNum = 273;
+						foodCount+=3;
+					} else { // 사냥 성공 50%
+						sceneNum = 272;
+						foodCount++;
+					}
+				}
+
+				else { // 그 외
+					if (randNum <= 0.3) { // 사냥 성공 30%
+						sceneNum = 272;
+						foodCount++;
+					} else { // 사냥 실패 70%
+						sceneNum = 271;
+					}
+				}
+				scene = new GameScene(game, makeScene(), timer, true);
+				break;
+			}
+			
+			else if (prevScene == 50) { //잠망경 특수승리 실패시
+				sceneNum = 501;
+				scene = new GameScene(game, makeScene(), timer, true);
+				break;
+			}
+			
+			else if (prevScene == 51 || prevScene == 52) { //구조기회
+				if (selectedItem == "거울" || selectedItem == "손전등") {
+					if (randNum <= 0.2) { //20% 구조
+						sceneNum = 97;
+					}
+					else {
+						sceneNum = 511;
+					}
+				}
+				
+				else if (selectedItem == "신호탄" || selectedItem == "레이더반사기") {
+					if (randNum <= 0.4) { //40% 구조
+						sceneNum = 97;
+					}
+					
+					else {
+						sceneNum = 511;
+					}
+				}
+				else { //아이템 없을 시 구조 안 됨
+					sceneNum = 511;
 				}
 				scene = new GameScene(game, makeScene(), timer, true);
 				break;
@@ -503,6 +748,9 @@ public class GameRun implements Callback {
 			break;
 		case "nextday":
 			scene.setVisible(false);
+			
+			//아이템 장착 상태 초기화
+			selectedItem = null;
 			// 상태창 날 업데이트
 			status.day++;
 
@@ -516,8 +764,11 @@ public class GameRun implements Callback {
 					break;
 				}
 			} else {
-				status.hunger++;
-				foodCount--;
+				if (status.hunger <3) {
+					status.hunger++;
+					foodCount--;
+				}
+				
 				setFoodConsume = false;
 			}
 
@@ -531,8 +782,11 @@ public class GameRun implements Callback {
 					break;
 				}
 			} else {
-				status.thirst++;
-				waterCount--;
+				if (status.thirst < 3) {
+					status.thirst++;
+					waterCount--;
+				}
+				
 				setWaterConsume = false;
 			}
 			
@@ -540,7 +794,7 @@ public class GameRun implements Callback {
 			if (status.day % 5 == 0) {
 				sceneNum = rand.nextInt(3) + 50; // 50~52
 			} else {
-				sceneNum = randomScenes[sceneCounter++];
+				sceneNum = randomScenes.get(sceneCounter++);
 			}
 
 			if (status.health < 0) { // 중상 상태에서 이벤트로 건강 감소
@@ -777,28 +1031,26 @@ public class GameRun implements Callback {
 			map.put(1, new Item("표류시작", 20.38, 11.74, 4.11, 1.75, true));
 			break;
 
-		// 상어
-		case 8:
+		// 상어, 토네이도
+		case 8: case 9: 
 			map.put(0, new Item("scene0" + sceneNum));
 			map.put(1, new Item("backpack", 1, 11, 2, 2, true));
 			map.put(2, new Item("상태", 3, 11, 1.8, 1.75, true));
 			map.put(3, new Item("food_off", 5, 11, 3, 2, true));
 			map.put(4, new Item("water_off", 8, 11, 3, 2, true));
 			map.put(5, new Item("아이템선택", 21, 11, 3, 2, true));
-			break;
-
-		// 토네이도
-		case 9:
-			map.put(0, new Item("scene0" + sceneNum));
-			map.put(1, new Item("backpack", 1, 11, 2, 2, true));
-			map.put(2, new Item("상태", 3, 11, 1.8, 1.75, true));
-			map.put(3, new Item("food_off", 5, 11, 3, 2, true));
-			map.put(4, new Item("water_off", 8, 11, 3, 2, true));
-			map.put(5, new Item("아이템선택", 21, 11, 3, 2, true));
-			break;
-
-		// 난파선
-		case 10:
+			break;	
+		
+		//모래폭풍, 물고기 떼
+		case 26: case 27:
+		// 난파선, 옷, 배멀미2, 거북이
+		case 10: case 11: case 12: case 13:
+		// 일사병, 바다뱀, 우울증, 번개
+		case 14: case 15: case 16: case 17:
+		// 보트구멍, 보물상자, 드럼통, 비
+		case 18: case 19: case 20: case 21:
+		//해초지역, 식량상태이상, 고래, 이상한물고기
+		case 22: case 23: case 24: case 25:
 			map.put(0, new Item("scene" + sceneNum));
 			map.put(1, new Item("backpack", 1, 11, 2, 2, true));
 			map.put(2, new Item("상태", 3, 11, 1.8, 1.75, true));
@@ -806,65 +1058,7 @@ public class GameRun implements Callback {
 			map.put(4, new Item("water_off", 8, 11, 3, 2, true));
 			map.put(5, new Item("아이템선택", 21, 11, 3, 2, true));
 			break;
-
-		// 옷
-		case 11:
-			map.put(0, new Item("scene" + sceneNum));
-			map.put(1, new Item("backpack", 1, 11, 2, 2, true));
-			map.put(2, new Item("상태", 3, 11, 1.8, 1.75, true));
-			map.put(3, new Item("food_off", 5, 11, 3, 2, true));
-			map.put(4, new Item("water_off", 8, 11, 3, 2, true));
-			map.put(5, new Item("아이템선택", 21, 11, 3, 2, true));
-			break;
-
-		// 비
-		case 12:
-			map.put(0, new Item("scene" + sceneNum));
-			map.put(1, new Item("backpack", 1, 11, 2, 2, true));
-			map.put(2, new Item("상태", 3, 11, 1.8, 1.75, true));
-			map.put(3, new Item("food_off", 5, 11, 3, 2, true));
-			map.put(4, new Item("water_off", 8, 11, 3, 2, true));
-			map.put(5, new Item("아이템선택", 21, 11, 3, 2, true));
-			break;
-
-		// 거북이
-		case 13:
-			map.put(0, new Item("scene" + sceneNum));
-			map.put(1, new Item("backpack", 1, 11, 2, 2, true));
-			map.put(2, new Item("상태", 3, 11, 1.8, 1.75, true));
-			map.put(3, new Item("food_off", 5, 11, 3, 2, true));
-			map.put(4, new Item("water_off", 8, 11, 3, 2, true));
-			map.put(5, new Item("아이템선택", 21, 11, 3, 2, true));
-			break;
-
-		// 일사병
-		case 14:
-			map.put(0, new Item("scene" + sceneNum));
-			map.put(1, new Item("backpack", 1, 11, 2, 2, true));
-			map.put(2, new Item("상태", 3, 11, 1.8, 1.75, true));
-			map.put(3, new Item("food_off", 5, 11, 3, 2, true));
-			map.put(4, new Item("water_off", 8, 11, 3, 2, true));
-			map.put(5, new Item("아이템선택", 21, 11, 3, 2, true));
-			break;
-
-		// 우울증
-		case 16:
-			map.put(0, new Item("scene" + sceneNum));
-			map.put(1, new Item("backpack", 1, 11, 2, 2, true));
-			map.put(2, new Item("상태", 3, 11, 1.8, 1.75, true));
-			map.put(3, new Item("food_off", 5, 11, 3, 2, true));
-			map.put(4, new Item("water_off", 8, 11, 3, 2, true));
-			map.put(5, new Item("아이템선택", 21, 11, 3, 2, true));
-			break;
-		// 번개
-		case 17:
-			map.put(0, new Item("scene" + sceneNum));
-			map.put(1, new Item("backpack", 1, 11, 2, 2, true));
-			map.put(2, new Item("상태", 3, 11, 1.8, 1.75, true));
-			map.put(3, new Item("food_off", 5, 11, 3, 2, true));
-			map.put(4, new Item("water_off", 8, 11, 3, 2, true));
-			map.put(5, new Item("아이템선택", 21, 11, 3, 2, true));
-			break;
+			
 
 		// 잠망경
 		case 50:
@@ -874,20 +1068,12 @@ public class GameRun implements Callback {
 			map.put(3, new Item("food_off", 5, 11, 3, 2, true));
 			map.put(4, new Item("water_off", 8, 11, 3, 2, true));
 			map.put(5, new Item("아이템선택", 21, 11, 3, 2, true));
+			map.put(6, new Item("hitshort", 12, 11, 2.5, 2, true));
+			map.put(7, new Item("hitlong", 15, 11, 2.5, 2, true));
 			break;
 
-		// 구조선박
-		case 51:
-			map.put(0, new Item("scene" + sceneNum));
-			map.put(1, new Item("backpack", 1, 11, 2, 2, true));
-			map.put(2, new Item("상태", 3, 11, 1.8, 1.75, true));
-			map.put(3, new Item("food_off", 5, 11, 3, 2, true));
-			map.put(4, new Item("water_off", 8, 11, 3, 2, true));
-			map.put(5, new Item("아이템선택", 21, 11, 3, 2, true));
-			break;
-
-		// 구조헬기
-		case 52:
+		// 구조선박, 구조헬기
+		case 51: case 52:
 			map.put(0, new Item("scene" + sceneNum));
 			map.put(1, new Item("backpack", 1, 11, 2, 2, true));
 			map.put(2, new Item("상태", 3, 11, 1.8, 1.75, true));
@@ -900,6 +1086,7 @@ public class GameRun implements Callback {
 		case 97:
 			map.put(0, new Item("scene" + sceneNum));
 			map.put(1, new Item("구조완료", 16.1, 11.74, 8.39, 1.75, true));
+			map.put(2, new Item("showscore", 7, 11, 1.8, 1.75, true));
 			break;
 
 		// 멀미 (1일차 고정)
@@ -916,6 +1103,7 @@ public class GameRun implements Callback {
 		case 99:
 			map.put(0, new Item("scene" + sceneNum));
 			map.put(1, new Item("게임오버", 7.9, 5.94, 8.39, 1.75, true));
+			
 			break;
 			
 		// 결과창
@@ -932,6 +1120,13 @@ public class GameRun implements Callback {
 		this.game = game;
 		this.timer = new GameTimer(game);
 		this.sceneNum = 0;
+		
+		//Scene 랜덤 섞기
+		for (int i=0; i<20; i++) {
+			randomScenes.add(i+8);
+		}
+		Collections.shuffle(randomScenes);
+		
 		scene = new GameScene(game, makeScene(), timer, true);
 		player.play(0);
 	}
