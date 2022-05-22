@@ -1,10 +1,8 @@
 package edu.sku.hw;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
@@ -72,7 +70,7 @@ public class GameRun implements Callback {
 
 		if (sceneNum <= 5) {
 			JOptionPane.showMessageDialog(scene, "Time Over!");
-			callbackClick(new Item("다음구역", 0, 0, 0, 0, true)); // 타임오버
+			callbackClick(new Item("탈출", 0, 0, 0, 0, true)); // 타임오버
 		}
 	}
 
@@ -85,6 +83,12 @@ public class GameRun implements Callback {
 		}
 
 		switch (item.getCaption()) {
+		case "게임시작":
+			scene.setVisible(false);
+			sceneNum = -10;
+			scene = new GameScene(game, makeScene(), timer, true);
+			break;
+			
 		case "생존시작":
 			timer.gameTimerStart();
 			scene.setVisible(false);
@@ -92,6 +96,7 @@ public class GameRun implements Callback {
 			scene = new GameScene(game, makeScene(), timer, true);
 			player.play(1);
 			break;
+			
 		case "표류시작":
 			scene.setVisible(false);
 			sceneNum = 98;
@@ -923,6 +928,11 @@ public class GameRun implements Callback {
 		System.out.println("makeScene_sceneNum: " + sceneNum);
 
 		switch (sceneNum) {
+		case -10:
+			map.put(0, new Item("scene-10"));
+			map.put(1, new Item("생존시작", 20.38, 11.74, 4.11, 1.75, true));
+			break;
+			
 		// 아이템선택창
 		case -3:
 			map.put(0, new Item("inventory_background"));
@@ -969,7 +979,7 @@ public class GameRun implements Callback {
 
 		case 0:
 			map.put(0, new Item("scene00"));
-			map.put(1, new Item("생존시작", 20.38, 11.74, 4.11, 1.75, true));
+			map.put(1, new Item("게임시작", 20.38, 11.74, 4.11, 1.75, true));
 			break;
 
 		case 1:
