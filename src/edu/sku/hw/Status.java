@@ -64,7 +64,7 @@ public class Status {
 	}
 	
 	public int getScore() { //올만점 14000 + 날짜수
-		score = health*2000 + hunger*1000 + thirst*1000 + day*500;
+		score = this.health*2000 + this.hunger*1000 + this.thirst*1000 + this.day*500;
 		return score;
 	}
 	
